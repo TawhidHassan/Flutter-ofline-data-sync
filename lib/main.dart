@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_offline/flutter_offline.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart' as pathProvider;
 import 'package:http/http.dart' as http;
@@ -134,31 +135,70 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-        child: FutureBuilder(
-          future: getData(),
-          builder:(context, snapshot) {
-            if(snapshot.hasData){
-              if(data.contains("empty")){
-                return Center(child: Text("this is empty"));
-              }else{
-                return RefreshIndicator(
-                  onRefresh: updateData,
-                  child: ListView.builder(
-                    itemCount: data.length,
-                      itemBuilder:(context, index){
-                        return Container(
-                            margin: EdgeInsets.all(10),
-                            child: Text(data[index]["Title"]??""));
-                      }
+      body: OfflineBuilder(
+        connectivityBuilder: (
+            BuildContext context,
+            ConnectivityResult connectivity,
+            Widget child,
+            ) {
+          final bool connected = connectivity != ConnectivityResult.none;
+          return  Stack(
+            fit: StackFit.expand,
+            children: [
+              Positioned(
+                height: 24.0,
+                left: 0.0,
+                right: 0.0,
+                child: Container(
+                  color: connected ? Color(0xFF00EE44) : Color(0xFFEE4400),
+                  child: Center(
+                    child: Text("${connected ? 'ONLINE' : 'OFFLINE'}"),
                   ),
-                );
-              }
-            }else{
-              return Center(child: CircularProgressIndicator(),);
-            }
-          }) ,
-        )
+                ),
+              ),
+
+              Center(
+                child: FutureBuilder(
+                    future: getData(),
+                    builder:(context, snapshot) {
+                      if(snapshot.hasData){
+                        if(data.contains("empty")){
+                          return Center(child: Text("this is empty"));
+                        }else{
+                          return RefreshIndicator(
+                            onRefresh: updateData,
+                            child: ListView.builder(
+                                itemCount: data.length,
+                                itemBuilder:(context, index){
+                                  return Container(
+                                      margin: EdgeInsets.all(10),
+                                      child: Text(data[index]["Title"]??""));
+                                }
+                            ),
+                          );
+                        }
+                      }else{
+                        return Center(child: CircularProgressIndicator(),);
+                      }
+                    }) ,
+              )
+
+
+            ],
+          );
+        },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+             Text(
+              'There are no bottons to push :)',
+            ),
+             Text(
+              'Just turn off your internet.',
+            ),
+          ],
+        ),
+      ),
       );
       // This trailing comma makes auto-formatting nicer for build methods
   }

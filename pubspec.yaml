@@ -32,6 +32,7 @@ dependencies:
   hive_flutter: ^1.1.0
   path_provider:
   json_annotation: ^4.1.0
+  flutter_offline: ^2.1.0
   flutter:
     sdk: flutter
 
